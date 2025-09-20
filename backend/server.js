@@ -11,9 +11,15 @@ const io = new Server(server, {
   },
 });
 
+const ROOM = "group";
+
 app.use(cors());
 io.on("connection", (socket) => {
   console.log("A user connected", socket.id);
+  socket.on("joinRoom", async (userName) => {
+    console.log(`${userName} joined the room`);
+    await socket.join(ROOM);
+  });
 });
 
 app.get("/", (req, res) => {

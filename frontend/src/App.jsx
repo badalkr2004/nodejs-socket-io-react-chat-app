@@ -12,6 +12,8 @@ export default function App() {
 
   useEffect(() => {
     socket.current = connectWS();
+
+    socket.current.on("connected", () => {});
   }, []);
 
   // FORMAT TIMESTAMP TO HH:MM FOR MESSAGES
@@ -106,14 +108,14 @@ export default function App() {
               <div className="text-sm font-medium text-[#303030]">
                 Realtime group chat
               </div>
-
+              {/* 
               {typers.length ? (
                 <div className="text-xs text-gray-500">
                   {typers.join(", ")} is typing...
                 </div>
               ) : (
                 ""
-              )}
+              )} */}
             </div>
             <div className="text-sm text-gray-500">
               Signed in as{" "}
