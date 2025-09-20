@@ -19,6 +19,16 @@ io.on("connection", (socket) => {
   socket.on("joinRoom", async (userName) => {
     console.log(`${userName} joined the room`);
     await socket.join(ROOM);
+
+    // send to all
+    // io.to(ROOM).emit("roomNotice", userName);
+
+    // Brodcast to all
+    socket.to(ROOM).emit("roomNotice", userName);
+  });
+
+  socket.on("chatMessage", (msg) => {
+    socket.to(ROOM).emit("chatMessage", msg);
   });
 });
 
