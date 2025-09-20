@@ -3,9 +3,11 @@ import { connectWS } from "./ws";
 
 export default function App() {
   const socket = useRef(null);
+  const timer = useRef(null);
   const [userName, setUserName] = useState("");
   const [showNamePopup, setShowNamePopup] = useState(true);
   const [inputName, setInputName] = useState("");
+  const [typers, setTypers] = useState([]);
 
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
@@ -23,8 +25,42 @@ export default function App() {
         console.log("msg", msg);
         setMessages((m) => [...m, msg]);
       });
+
+      socket.current.on("typing", (userName) => {
+        console.log(`${userName} is typing`);
+        setTypers((t) => {
+          const isExists = t.find((typer) => typer === userName);
+          if (!isExists) return [...t, userName];
+          return t;
+        });
+      });
+
+      socket.current.on("stopTyping", (userName) => {
+        setTypers((t) => t.filter((typer) => typer !== userName));
+      });
     });
+
+    return () => {
+      socket.current.off("roomNotice");
+      socket.current.off("chatMessage");
+      socket.current.off("typing");
+      socket.current.off("stopTyping");
+    };
   }, []);
+
+  useEffect(() => {
+    if (text) {
+      socket.current.emit("typing", userName);
+      clearTimeout(timer.current);
+    }
+    timer.current = setTimeout(() => {
+      socket.current.emit("stopTyping", userName);
+    }, 1000);
+
+    return () => {
+      clearTimeout(timer.current);
+    };
+  }, [text, userName]);
 
   // FORMAT TIMESTAMP TO HH:MM FOR MESSAGES
   function formatTime(ts) {
@@ -118,14 +154,14 @@ export default function App() {
               <div className="text-sm font-medium text-[#303030]">
                 Realtime group chat
               </div>
-              {/* 
+
               {typers.length ? (
                 <div className="text-xs text-gray-500">
                   {typers.join(", ")} is typing...
                 </div>
               ) : (
                 ""
-              )} */}
+              )}
             </div>
             <div className="text-sm text-gray-500">
               Signed in as{" "}
